@@ -1,0 +1,23 @@
+﻿.icon0{
+overflow:hidden;margin:5px 10px;
+}
+.list_ul figcaption p{
+font-size:12px;
+color:#222;
+}
+.icon0 figure div{
+    display:inline-block;
+
+    width:35px;
+    height:35px;
+    border-radius:35px;
+    border:2px solid #666;
+    overflow:hidden;
+    -webkit-box-shadow:0 0 2px #888;
+    box-shadow:0 0 2px #888;
+}
+.icon0 img{
+    width:100%;
+    min-height:100%; 
+    text-align:center;
+}

@@ -1,0 +1,4 @@
+function global_logoff(){
+    $.post("/php/req.php", { "token": token, "req-type": "logoff" }, "");
+	top.location="/";
+}

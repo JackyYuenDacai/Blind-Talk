@@ -1,0 +1,93 @@
+DELIMITER ';'
+use user_ip;
+drop procedure if exists   ver_login;
+drop procedure if exists   user_sign;
+drop procedure if exists   record_visit;
+drop procedure if exists   get_user_icon;
+drop procedure if exists   get_user_des ;
+go
+DELIMITER '/$'
+create procedure ver_login( id varchar(64), pwd varchar(512))
+begin
+declare  cu  INT;
+declare  tk  varchar(1024);
+set  pwd=Replace(  pwd,'%3D','=');
+set  pwd=FROM_BASE64(pwd);
+select   @cu:=COUNT(*) from idpw where idpw.id =   id AND idpw.pwd = md5(pwd);
+IF   @cu = 0 then
+	select '0';
+else 
+	set   tk = md5 (  TO_BASE64(id+now() + rand()));
+	update user_last_log set llog = now(),IsOnline=1 where user_last_log.id =   id;
+	select '1'+  tk ;
+	update usertoken set token =   tk ,exptime = now()  where usertoken.id=  id;
+	 
+end if;
+end; /$
+
+create procedure user_sign( id varchar(64), pwd varchar(512), des varchar(4096))
+begin
+	set   id=Replace(  id,'%3D','=');
+	set   pwd=Replace(  pwd,'%3D','=');
+	set   des=Replace(  des,'%3D','=');
+	insert into idpw values(FROM_BASE64(id),md5(FROM_BASE64(pwd)));
+	insert into user_last_log values(FROM_BASE64(id),now(),0);
+	insert into user_description values(FROM_BASE64(id),FROM_BASE64(des));
+	insert into usertoken values(FROM_BASE64(id),null,now());
+	insert into  user_icon values(FROM_BASE64(id),default);
+	select 1;
+end; /$
+
+create procedure record_visit( ip varchar(128))
+begin
+	declare   t int;
+	/*set   ip=Replace( ip,'%3D','=');*/
+	/*--set   ip=CONVERT(varchar(4096),FROM_BASE64(  ip));*/
+	select   @t:=count(*) from visit_log where visit_log.ip=  ip;
+	if(  @t=0)then
+		
+		insert into visit_log values(  ip,now(),1);
+	else 
+		select   @t:=visit_log.vcount from visit_log where visit_log.ip = ip;
+		update visit_log set visit_log.ltlog=now(),visit_log.vcount=  t+1 where visit_log.ip=  ip;
+	end if;
+end; /$
+
+create procedure get_user_icon( id varchar(64))
+begin
+	declare   cu   int;
+	declare   pa   varchar(4096);
+	select   @cu:=count(*) from user_icon where user_icon.id=  id;
+	if  (@cu=0 or @cu >1) then
+
+		select 'defser.png';
+	else
+		select   @pa:=user_icon.icpath from user_icon where user_icon.id=  id;
+		if( @pa=null)then
+			select 'defser.png';
+		else
+			select  @pa;
+		end if;
+	end if;
+end; /$
+go
+create procedure get_user_des( id varchar(64))
+begin
+	declare   cu    int;
+	declare   pa    varchar(4096);
+	select   @cu:=count(*) from user_description where user_description.id=  id;
+	if  (@cu=0 or @cu >1) then
+		select 'No Descriptions';
+	
+	else
+		select   @pa:=user_description.des from user_description where user_description.id=  id;
+		if( @pa=null)then
+			select 'No Descriptions';
+		
+		else 
+			select   @pa;
+		end if;
+	end if;
+end; /$
+go
+DELIMITER ;

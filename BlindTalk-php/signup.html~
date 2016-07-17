@@ -1,0 +1,81 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"  onresize="sizeChanged()" >
+<head title="Blind Talk">
+<link href="./bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet" />
+<script type="text/javascript" src="./jst/jquery-2.0.3UnCom.js"></script>
+<script type="text/javascript" src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+<script src="http://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js" integrity="sha256-mFypf4R+nyQVTrc8dBd0DKddGB5AedThU73sLmLWdc0=" crossorigin="anonymous"></script>	
+<script type="text/javascript" src="./jst/base64.js" ></script>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title >Blind Talk</title>
+    <script type="text/javascript">
+        function signupclick() {
+            var idn = $("#uid0").val();
+            var pwn = $("#pwd0").val();  
+            var des = $("#des0").val();
+            idn = base64encode(idn);
+            pwn = base64encode(pwn);
+            des = base64encode(des);
+            var pack = {  };
+            $.post("php/signup.php", { "id": idn, "pwd": pwn ,"des":des}, function (json) {
+                if (json) {
+                   if(json[0]=='1'){
+						self.location
+					}else{
+						$("#nnbd0").animate({ backgroundColor: "#666" }, 1000);
+						$("#dsbox0").fadeOut(1000,function(){
+								$("#dsbox0").text("Somethings Wrong,Change It!.");
+								$("#dsbox0").fadeIn(500);
+							
+						});
+					}
+                } else {
+                }
+            }, "text");
+
+        }
+        </script>
+    </head>
+<body id="nnbd0" style=" vertical-align:baseline" >
+<script type="text/javascript">var st_nav_wh = 2;</script>
+<script type="text/javascript" src="./jst/st_nav_code.js" ></script> 
+<form style="margin-left:80px;margin-top:60px;width:60%" class="form-horizontal">
+  <fieldset>
+    <legend>Sign Up</legend>
+    <div class="form-group">
+      <label for="inputEmail" class="col-lg-2 control-label">User Id</label>
+      <div class="col-lg-10">
+        <input class="form-control" id="uid0" placeholder="User Id" type="text">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputPassword" class="col-lg-2  control-label">Password</label>
+      <div class="col-lg-10">
+        <input class="form-control" id="pwd0" placeholder="Password" type="password">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="textArea" class="col-lg-2 row-lg-10 control-label">Descriptions</label>
+      <div class="col-lg-10">
+        <textarea class="form-control" rows="3" id="des0"></textarea>
+        <span id="dsbox0" class="help-block">Descript yourself.</span>
+      </div>
+    </div>
+     
+
+
+    <div class="form-group">
+      <div class="col-lg-10 row-lg-10 col-lg-offset-2">
+        <button type="reset" class="btn btn-default">Cancel</button>
+        <button type="button" onclick="signupclick()" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </fieldset>
+</form> 
+    <script type="text/javascript">
+        var scr_x = document.body.clientWidth;
+        var scr_y = document.body.clientHeight;
+
+    </script>
+       </body>
+</html>
