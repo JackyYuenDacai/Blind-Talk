@@ -20,11 +20,11 @@
 ###Language or Techniques
  * SQL 
  * HTML 
- * CSS¡¡
+ * CSSÂ¡Â¡
  * JAVASCRIPT 
  * PHP
  ...
-##Requirements
+###Requirements
  * mysql >=5.6 
  * apache >=2.4.10
  * php >=5
