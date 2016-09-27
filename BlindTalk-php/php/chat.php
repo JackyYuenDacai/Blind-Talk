@@ -8,8 +8,8 @@
  
 		switch($_POST['req-type']){
 			case "send":
-				print_r($_POST['content']['adds_array']);
-				chatSend($_POST['token'],$_POST['to'],$_POST['content']['adds_array']);
+				//print_r($_POST['content']['adds_array']);
+				chatSend($_POST['token'],$_POST['to'],$_POST['content']);
 				break;
 			default:
                         	echo "Negative Error REQ";

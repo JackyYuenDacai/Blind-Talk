@@ -17,19 +17,15 @@
 3. Game With Friends
 4. Sharing
 
-###Language or Technology
+###Language or Techniques
  * SQL 
  * HTML 
  * CSS¡¡
  * JAVASCRIPT 
- * ASP.NET 
- * C# 
- * XAML ...
+ * PHP
+ ...
+##Requirements
+ * mysql >=5.6 
+ * apache >=2.4.10
+ * php >=5
 
-### Used As
-My SBA Project For Now
-### Developing By:
-Jacky Yuen</br>
-As Im still attending secondary school,</br>
-and dont have much time to do the development,
->please forgive.

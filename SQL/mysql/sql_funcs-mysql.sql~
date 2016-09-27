@@ -13,6 +13,14 @@ drop procedure if exists   get_user_nots;
 drop procedure if exists   get_uni_code_time;
 drop procedure if exists   upl_chat_record;
 drop procedure if exists   get_chat_record;
+drop procedure if exists   user_logoff;
+drop procedure if exists   register_user_addition;
+drop procedure if exists   get_user_addition;
+
+drop procedure if exists   up_share_record;
+drop procedure if exists   get_share_record;
+
+drop procedure if exists   user_befriend;
 
 DELIMITER '/$'
 create procedure ver_login( id varchar(64), pwd varchar(512))
@@ -47,7 +55,7 @@ begin
 	set   id=Replace(  id,'%3D','=');
 	set   pwd=Replace(  pwd,'%3D','=');
 	set   des=Replace(  des,'%3D','=');
-	insert into idpw values(FROM_BASE64(id),md5(FROM_BASE64(pwd)));
+	insert into idpw values(FROM_BASE64(id),md5(FROM_BASE64(pwd)),0);
 	insert into user_last_log values(FROM_BASE64(id),now(),0);
 	insert into user_description values(FROM_BASE64(id),FROM_BASE64(des));
 	insert into usertoken values(FROM_BASE64(id),null,now());
@@ -174,6 +182,54 @@ begin
 	
 end; /$
 
+create procedure up_share_record(token varchar(256),entarg int,type int,val varchar(4096),whi int,time datetime,uni varchar(128))
+begin
+	select id from usertoken where 
+		usertoken.token=token and 
+		usertoken.exptime >= now() into @id;
+	insert into share_recs values(@id,type,entarg,val,time,whi,uni);
+end; /$
+
+create procedure get_share_record(token varchar(256),towho int ,uni varchar(128),btime datetime)
+begin
+
+	select id from usertoken where 
+		usertoken.token=token and 
+		usertoken.exptime >= now() into @id;
+
+	select max(sh_time) from share_recs where sh_time <= btime and share_recs.unino != uni into @ltm;
+	
+	select 
+	case 
+	when towho = 0 then (select distinct unino from share_recs where sh_time = 
+					(select max(sh_time) from share_recs where sh_time <= btime and share_recs.unino != uni and share_recs.id = @id) )
+					
+	when towho = 1 then	(select distinct unino from share_recs where sh_time = 
+					(select max(sh_time) from share_recs where sh_time <= btime and share_recs.unino != uni and id in (select fId from user_flist where id = @id)) )
+					
+	when towho = 2 then	(select distinct unino from share_recs where sh_time = 
+					(select max(sh_time) from share_recs where sh_time <= btime and share_recs.unino != uni))
+	else 0
+	end  into @uno;
+
+	
+	 
+	
+	
+	select '1' as res,
+		sh_time as time,
+		sh_type as type,
+		val as content,
+		id ,
+		@uno as unikey
+		from share_recs where 
+		share_recs.unino = @uno
+		and share_recs.unino != uni
+		order by share_recs.enum;
+
+	
+end; /$
+
 create procedure get_chat_record(token varchar(256),fId varchar(64),btime datetime)
 begin
 	select id from usertoken where 
@@ -191,7 +247,8 @@ begin
 			ch_time as time,
 			msg_type as type,
 			val as content,
-			(chatt_recs.send=@id) as issend 
+			(chatt_recs.send=@id) as issend ,
+			unino as uno
 			from chatt_recs where 
 			chatt_recs.ch_time = @ltm and
 			((chatt_recs.send=@id and chatt_recs.recv=fId) or 
@@ -204,8 +261,38 @@ begin
 	
 end; /$
 
+
+
+create procedure register_user_addition(token varchar(256),id varchar(64),fpath varchar(512),ftype int)
+begin
+	select md5 (  TO_BASE64(now() + rand())) into @fkey;
+	insert into file_record values(@fkey,id,ftype,fpath);
+	select @fkey;
+end; /$
+
+create procedure get_user_addition(fId varchar(128))
+begin
+	select fpath from file_record where id = fId;
+end; /$
+
 create procedure user_logoff(token varchar(256))
 begin
 	update usertoken set usertoken.exptime = subtime(now(),5) where usertoken.token=token;
+end; /$
+
+create procedure user_befriend(token varchar(256),fId varchar(64))
+begin
+	select id from usertoken where 
+		usertoken.token=token and 
+		usertoken.exptime >= now() into @id;
+	select @id;
+	select count(*) from user_flist where id=@id and user_flist.fId=fId into @cu;
+	if @cu = 0 then
+		insert into  user_flist values(@id,now(),now(),fId);
+		insert into  user_flist values(fId,now(),now(),@id);
+		select '1' as res;
+	else
+		select '0' as res;
+	end if;
 end; /$
 DELIMITER ;

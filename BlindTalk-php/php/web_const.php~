@@ -1,6 +1,0 @@
-<?php
-	global $mysql_server="localhost";
-	global $mysql_user="dball";
-	global $mysql_pwd="123456";
-	global $mysql_db="user_ip";
-?>

@@ -1,4 +1,13 @@
 <?php
+function random_str($length, $keyspace = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+{
+    $str = '';
+    $max = mb_strlen($keyspace, '8bit') - 1;
+    for ($i = 0; $i < $length; ++$i) {
+        $str .= $keyspace[rand(0, $max)];
+    }
+    return $str;
+}
 function enlong_token($id,$tok){
 	include 'web_const.php';
 	$res=0;
@@ -40,7 +49,7 @@ function getuserIcon($id){
 	include 'web_const.php';
 	$conn=mysql_connect($mysql_server, $mysql_user,$mysql_pwd);
 	$sqlstr= "call get_user_icon('" . $id."');";
-	echo $sqlstr;
+	//echo $sqlstr;
 	$result=mysql_db_query($mysql_db,$sqlstr, $conn);
 	$res=mysql_result($result,0,'res');
 	
@@ -162,15 +171,17 @@ function RecvChat($tok,$id,$time){
 			$res=mysql_fetch_row($result);
 			//echo print_r($res);
 			if($res==false)break;
-			array_push($reslist,array($res));
+			array_push($reslist,$res);
 		}
 		//echo "count:".count($reslist)."\n";
 		if(count($reslist)!=0){
-			$time=$reslist[0][0][1]; 
-			array_unshift($reslist,$reslist[0][1]);
+			
+			$time=$reslist[0][1]; 
+			//print_r($reslist);
+			//array_unshift($reslist,$reslist[0][1]);
 			mysql_free_result($result); 
 			mysql_close($conn);  
-			
+			//print_r($reslist);
 			return $reslist;
 		}else return false;
 	}else{
@@ -185,14 +196,20 @@ function RecvChatQuery($tok,$id,$time,$hmany){
 	for($i=0;$i<$hmany;$i++){
 		$buf=RecvChat($tok,$id,$time);
 		if($buf==false)break;
-		$time=$buf[1][0][1];
-		array_push($msglist,$buf[1]);
+		$time=$buf[0][1];
+
+		$buf=array_slice($buf,0);
+		//print_r($buf);
+		array_push($msglist,$buf);
 		
+ 
+		 
 	}
 	array_unshift($msglist,$time);
 	//echo $time."@\n";
 	//print_r($msglist);
 	//echo "@\n";
+	//print_r($msglist);
 	return $msglist;
 }
 
@@ -210,5 +227,118 @@ function g_logoff($tok){
 		return 0;
 	}
 }
+function register_file($tok,$fpath,$ext,$ftype){
+	include 'web_const.php';
+	if(check_token($tok)){
+		$id=get_id_by_token($tok);
+		$conn=mysql_connect($mysql_server, $mysql_user,$mysql_pwd);
+		$sqlstr= "call register_user_addition('" .$tok."','".$id."','".$fpath."',".$ftype.");";
+		//echo $sqlstr;
+		$result=mysql_db_query($mysql_db,$sqlstr, $conn);
+		$res=mysql_fetch_row($result);
+		mysql_close($conn);  $res[1]=$ftype;
+		return $res;
+	}else{
+		return 0;
+	}
+}
+function get_file($tok,$fkey){
+	include 'web_const.php';
 
+	$id=get_id_by_token($tok);
+	$conn=mysql_connect($mysql_server, $mysql_user,$mysql_pwd);
+	$sqlstr= "call get_user_addition('" .$fkey."');";
+	//echo $sqlstr;
+	$result=mysql_db_query($mysql_db,$sqlstr, $conn);
+	$res=mysql_fetch_row($result);
+	mysql_close($conn);  
+	return $res[0];
+
+}
+function entrySave($tok,$id,$entarg,$content){
+	include 'web_const.php';
+	if(check_token($tok)){
+		$uatime=getUniTime();
+		$i=0; 
+		$conn=mysql_connect($mysql_server, $mysql_user,$mysql_pwd);
+		foreach($content as $msg){
+				$sqlstr= "call up_share_record('" .$tok."',".$entarg.",".$msg[0].",'".$msg[1]."',".$i.",'".$uatime[1]."','".$uatime[0]."');";
+				echo $sqlstr."</br>";
+				mysql_db_query($mysql_db,$sqlstr, $conn);
+				$i++;
+
+		}
+		mysql_close($conn);  
+	}else{
+	return false;
+	}
+}
+
+function RecvEntry($tok,$towho,$unikey,$time){
+	include 'web_const.php';
+	if(check_token($tok)){
+		if ($time==NULL)
+			$time=getUniTime()[1];
+		
+		$conn=mysql_connect($mysql_server, $mysql_user,$mysql_pwd);
+		$sqlstr= "call get_share_record('" .$tok."',".$towho.",'".$unikey."','".$time."');";
+		//echo $sqlstr;
+		$result=mysql_db_query($mysql_db,$sqlstr, $conn);
+		$reslist = array();
+		while(1){
+			$res=mysql_fetch_row($result);
+			//echo print_r($res);
+			if($res==false)break;
+			array_push($reslist,$res);
+		}
+
+		//echo "count:".count($reslist)."\n";
+		if(count($reslist)!=0){
+			$time=$reslist[0][0][1]; 
+			array_unshift($reslist,$reslist[0][1]);
+			mysql_free_result($result); 
+			mysql_close($conn);  
+			//echo print_r($reslist);
+			return $reslist;
+		}else return false;
+	}else{
+		return false;
+	}
+}
+function RecvEntryQuery($tok,$towho,$unikey,$time,$hmany){
+	if($time!=NULL)
+		$time=str_replace("+"," ",$time);
+	else $time=NULL;
+	$msglist=array();
+	for($i=0;$i<$hmany;$i++){
+		$buf=RecvEntry($tok,$towho,$unikey,$time);
+		//print_r($buf);
+		if($buf==false)break;
+		$time=$buf[0];unset($buf[0]);
+		$unikey=$buf[1][5];
+		array_push($msglist,$buf);
+		
+	}
+	array_unshift($msglist,$time);
+	//echo $time."@\n";
+	//print_r($msglist);
+	//echo "@\n";
+	return $msglist;
+}
+function UserBeFriend($tok,$fid){
+	include 'web_const.php';
+	$id=get_id_by_token($tok);
+	$conn=mysql_connect($mysql_server, $mysql_user,$mysql_pwd);
+	$sqlstr= "call user_befriend('" .$tok."','".$fid."');";
+	//echo $sqlstr;
+	$result=mysql_db_query($mysql_db,$sqlstr, $conn);
+	$res=mysql_fetch_row($result);
+	mysql_close($conn);  
+	return $res[0];
+
+}
+function addNotToUser($tok,$fid){
+}
+function readNot($tok){
+}
 ?>

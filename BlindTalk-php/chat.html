@@ -1,36 +1,82 @@
 ﻿<!DOCTYPE html>
 <html style="height:100%;overflow-y:hidden;">
 <head>
-<link href="./bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="css/icon_style0.css" rel="stylesheet"/>
-<link href="css/timline0.css" rel="stylesheet"/>
+<link href="/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
+<link href="./bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="/css/lightbox.css" rel="stylesheet"/>
+<link href="/css/boxshadow.css" rel="stylesheet"/>
+<link href="/css/dumascroll.css" rel="stylesheet"/>
 <script type="text/javascript" src="./jst/jquery-2.0.3UnCom.js"></script>
 <script type="text/javascript" src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./jst/base64.js" ></script>
 <script type="text/javascript" src="./jst/global_funcs.js" ></script>
+<script src="http://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js" integrity="sha256-mFypf4R+nyQVTrc8dBd0DKddGB5AedThU73sLmLWdc0=" crossorigin="anonymous"></script>	
+<script src="/jst/plugins/canvas-to-blob.min.js" type="text/javascript"></script>
+<script src="/jst/plugins/sortable.min.js" type="text/javascript"></script>
+<script src="/jst/plugins/purify.min.js" type="text/javascript"></script>
+<script src="/jst/fileinput.min.js"></script>
+<script type="text/javascript" src="/jst/ajaxfileupload.js"></script>
+<script src="/jst/audioplayer.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="/jst/dumascroll.js" ></script>
 <script type="text/javascript">
     var id;
     var icon;
     var desc;
     var token;
     var shrectime;
-	var not_count ;
-    var not_share ;
-	var not_chat ;	
-    var not_other ;
-    if (document.cookie.length > 0) {
-        if (document.cookie.indexOf("token=") != -1) {
-            token = document.cookie.slice(document.cookie.indexOf("token=") + 6);
-            //alert(token);
-        }
-        else {
-            self.navigate("index.html");
-        }
-    } else {
-        self.navigate("index.html");
-    }
+	var not_count;
+    var not_share;
+	var not_chat;	
+    var not_other;
+	var enTarg;
+	var ldtime='0';
+	var lkey='0';
 
+	var cltime;
+	var clkey;
+	var fcount=5;
+	var Additions=new Array();
+	enTarg=0;
+
+	ldtime=getCookie("share_sltime");
+
+	if(ldtime!=""){
+		setCookie("share_sltime",'0');
+		ldtime='0';
+	}
+	lkey=getCookie("share_laskey");
+	if(lkey!=""){
+		setCookie("share_laskey","0");
+		lkey='0';
+	}
+
+	cltime=getCookie("chat_cltime");
+	//if(lkey!=""){
+		setCookie("chat_cltime","0");
+		cltime='0';
+	//}	
+
+	clkey=getCookie("chat_laskey");
+	//if(lkey!=""){
+		setCookie("chat_laskey","0");
+		lkey='0';
+	//}
+
+
+
+	token=getCookie("token");
+	if(token=="")
+		top.location="/";
+    $( function()
+    {
+        $( 'audio' ).audioPlayer();
+    });  
+ 	
+	
 </script>
+
+
 <script class="eles2load" id="reqscpt" type="text/javascript">
 function req_info(){
 //req icon desc
@@ -38,7 +84,7 @@ function req_info(){
         //alert(json[0]);
         if (json.slice(0,8) == 'Negative') {
             document.cookie = null;
-            self.navigate("index.html");
+            top.location="/";
         } else {
             id = json.slice(json.indexOf('Id=')+3,json.indexOf('&Ico'));
             icon = json.slice(json.indexOf('Ico=') + 4, json.indexOf('&Des='));
@@ -54,7 +100,7 @@ function req_info(){
         //alert(json[0]);
         if (json.slice(0,8) == 'Negative') {
             document.cookie = null;
-            self.navigate("index.html");
+            top.location="/";
         } else {
             not_count = json.slice(json.indexOf('count=')+3,json.indexOf('&share'));
             not_share = json.slice(json.indexOf('share=') + 6, json.indexOf('&chat='));
@@ -80,6 +126,92 @@ req_info();
 setInterval(function() {
     req_info();
 }, 10000);
+</script>
+<script type="text/javascript">
+function ChtsendClicked(){ 
+	
+	//$("#mdia0").animate({ height:"0px" }, 1000);
+	Additions.push(new Array(2,$('#tades0').val()));
+    $.post("php/chat.php", { 
+		"token": token, 
+		"req-type": "send",
+		"to": getCookie('chat_fId'),
+		"content":Additions },
+		function (json) {
+        //alert(json[0]);
+        if (json[0] == 'N') {
+            document.cookie = null;
+            	top.location="/";
+        } else {
+          
+        }
+		
+    });
+	Additions=new Array();
+	ChtcleanClicked();
+	setTimeout("chat_msgbox_refresh()",1000);
+	
+}
+function ChtcleanClicked(){
+	$('#tades0').text("");
+}
+
+function chat_f_selected(id){
+	setCookie('chat_fId',id);
+		setCookie("chat_cltime","0");
+		cltime='0';
+	flist_box_refresh();
+	chat_msgbox_refresh();
+	$("#namebox0").text(getCookie('chat_fId'));
+
+}
+function flist_box_refresh(){
+	$("#flistb0").html("<li><a class='text-center' style='font-size:20px;border-radius: 6px;' ><i class='icon-chevron-right'></i>more friends</a></li>");
+	$.ajax({url:"/php/recv_chat_flist.php",
+							type:"post",data:{
+							"token":token},
+							
+							success:function(data){
+									 
+									$("#flistb0").append(data);
+							}});
+	$("#namebox0").text(getCookie('chat_fId'));
+}
+function chat_msgbox_refresh(){
+	$("#msgbox1").html("");
+	$.ajax({url:"/php/recv_chat_msg.php",
+		type:"post",
+		data:{
+		"token":token,
+		"fid":getCookie("chat_fId"),
+		"count":20,
+		"ldtime":cltime,
+		"lkey":clkey
+		},
+		success:function(data){
+				 
+				$("#msgbox1").append(data);
+		}});
+}
+function moremsgClicked(){
+		cltime=getCookie('chat_cltime');
+		clkey=getCookie('chat_laskey');
+		//alert(ldtime,lkey);
+		//alert(getCookie("share_sltime"),getCookie("share_laskey"));
+				$.ajax({url:"php/recv_chat_msg.php",
+						type:"post",
+						data:{
+							"token":token,
+							"fid":getCookie("chat_fId"),
+							"count":1,
+							"ldtime":getCookie('chat_cltime'),
+							"lkey":getCookie('chat_laskey')
+						},
+						success:function(data){
+								 
+								$("#msgbox1").append(data);
+						}});
+}
 </script>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Chat Room</title>
@@ -111,9 +243,9 @@ setInterval(function() {
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">Friends</a></li>
-                        <li><a href="#">Settings</a></li>
+                        <li><a href="home.html">Home</a></li>
+                        <li><a href="friends.html">Friends</a></li>
+                        <li><a href="settings.html">Settings</a></li>
                         <li class="divider"></li>
                         <li><a onclick="global_logoff()" href="#">Logoff</a></li>
                     </ul>
@@ -125,6 +257,182 @@ setInterval(function() {
 </nav>
 </head>
 <body style="height:100%">
-     <iframe  style="border-width: 0px; border-style: none; margin-top:50px;  width:100%; height:102%; position: relative; " src="frame/chat_frame.php"></iframe>
+     <div class="row" style="margin-left:2%;margin-right:2%;margin-top:4%;height:100%">
+        
+		<div class="col-md-3 bs-docs-sidebar box-shadow-3 dumascroll " style="margin-top:3%;height:80%;border-radius: 6px;">
+			
+				<ul id="flistb0"class="nav nav-list bs-docs-sidenav " style="margin-top:5%;margin-bottom:5%">
+						<li><a href='/friends.html' class='text-center' style='font-size:20px;border-radius: 6px;' ><i class='icon-chevron-right'></i>more friends</a></li>
+				</ul>
+
+				<script type="text/javascript">
+					$.ajax({url:"/php/recv_chat_flist.php",
+						type:"post",data:{
+							"token":token},
+						success:function(data){
+								 
+								$("#flistb0").append(data);
+						}});
+					/*function morefriendClicked(){
+				
+						//alert(ldtime,lkey);
+						//alert(getCookie("share_sltime"),getCookie("share_laskey"));
+								$.ajax({url:"/php/recv_chat_flist.php",
+										type:"post",
+										success:function(data){
+												 
+												$("#entries_box").append(data);
+										}});
+					}*/
+				//		lkey=getCookie("share_laskey");
+				//	if(lkey!=""){
+				//		setCookie("share_laskey","0");
+				//		lkey='0';
+				//	}
+				</script>
+			
+		</div>
+		
+		<div class="col-md-9" id="chbox0" style="height:100%">
+			
+				<div style="margin-top:4%;height:85%">
+			
+						<div >
+
+							<p id="namebox0" class="text-center" style="font-size:35px;width:100%">@fId</p>
+						</div>
+						<div id="msgbox0" style="margin-top:0px;width:94%;margin-left:3%;height:55%;border-radius: 6px;" class="dumascroll box-shadow-4">	
+
+							<div  id="msgbox1" style="width:100%;height:100%;margin-right:3%;">
+								
+							
+							</div>
+						<div class="text-center"><div class="panel panel-default" onclick="moremsgClicked()">
+							<div class="panel-heading text-center" style="text-align:center">
+								<h3 class="panel-title">
+									more messages
+								</h3>
+							</div> 
+					
+						</div></div>
+							<script type="text/javascript">
+								$("#namebox0").text(getCookie('chat_fId'));
+								$.ajax({url:"/php/recv_chat_msg.php",
+									type:"post",
+									data:{
+									"token":token,
+									"fid":getCookie("chat_fId"),
+									"count":20,
+									"ldtime":cltime,
+									"lkey":clkey
+									},
+									success:function(data){
+											 
+											$("#msgbox1").append(data);
+									}});
+
+							</script>
+							
+						</div>
+						<div style="margin-top:3%" class="text-bottom">
+							<textarea  class="box-shadow-3" style="margin-left:3%;width:94%;
+									height:16%;font-size:20px;resize:none"   
+									id="tades0"></textarea>
+							<div style="margin-top:1%;margin-left:1.5%;margin-right:3%">
+
+			
+									 
+								<div class="text-right"> <div id="contal0" class="col-lg-10">
+									<input type="file" name="file" style="" id="FEele" multiple class="file-loading" ></input></div>
+									<script type="text/javascript">
+									//TODO:listen to file deleted event;
+										 
+									$("#FEele").fileinput({
+								
+													uploadUrl: "/php/upload.php",  
+								
+													uploadAsync: true,  
+													showUpload: true,  
+													showRemove : true, // 
+													showPreview : false, // 
+													showCaption: true,//title
+													browseClass: "btn btn-primary", //buton style   
+													dropZoneEnabled:false,
+													maxFileCount: 10 ,
+													validateInitialCount:true,
+													previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+													msgFilesTooMany: "Too many addition files",
+												});
+									 
+									$('#FEele').on('fileerror', function(event, data, msg) {
+												console.log(data.id);
+												console.log(data.index);
+												console.log(data.file);
+												console.log(data.reader);
+												console.log(data.files);
+												// get message
+											  //  alert(msg);
+
+									});
+									//异步上传返回结果处理
+
+									$("#FEele").on("fileuploaded", function (event, data, previewId, index) {
+												   console.log(data.id);
+												   console.log(data.index);
+												   console.log(data.file);
+												   console.log(data.reader);
+												   console.log(data.files);
+
+													var obj = data.response;
+													//alert(obj['key']);
+													Additions.push(new Array(obj['type'],obj['key']));
+												//    alert(JSON.stringify(data.success));
+											   //    
+												});
+
+									//
+										   $('#FEele').on('filebatchuploaderror', function(event, data, msg) {
+												console.log(data.id);
+												console.log(data.index);
+												console.log(data.file);
+												console.log(data.reader);
+												console.log(data.files);
+												// get message
+											   // alert(msg);
+											 });
+									   //同步上传返回结果处理
+									   $("#FEele").on("filebatchuploadsuccess", function (event, data, previewId, index) {
+											   console.log(data.id);
+												   console.log(data.index);
+												   console.log(data.file);
+												   console.log(data.reader);
+												   console.log(data.files);
+													var obj = data.response;
+												   
+										  });
+
+									//上传前
+
+									$('#FEele').on('filepreupload', function(event, data, previewId, index) {
+											var form = data.form, files = data.files, extra = data.extra,
+												response = data.response, reader = data.reader;
+											console.log('File pre upload triggered');
+										});
+
+
+									</script>
+									<button  style="margin-right:6px;" type="button" onclick="ChtcleanClicked()" class="btn btn-default" >Clean</button>
+									<button   type="button" onclick="ChtsendClicked()" class="btn btn-primary">Send</button>
+								</div>
+							</div>
+						</div>
+					
+				
+
+			</div>
+
+		</div>
+	</div>
+<script type="text/javascript" src="/jst/lightbox.js"></script>
 </body>
 </html>

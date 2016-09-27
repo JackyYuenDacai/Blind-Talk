@@ -20,7 +20,7 @@
             $.post("php/signup.php", { "id": idn, "pwd": pwn ,"des":des}, function (json) {
                 if (json) {
                    if(json[0]=='1'){
-						self.location
+						self.location="/";
 					}else{
 						$("#nnbd0").animate({ backgroundColor: "#666" }, 1000);
 						$("#dsbox0").fadeOut(1000,function(){

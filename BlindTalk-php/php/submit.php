@@ -8,7 +8,7 @@
  
 		switch($_POST['sub-type']){
 			case "entry":
-				
+				entrySave($_POST['token'],$id,$_POST['showto'],$_POST['content']);
 				break;
 			case "share":
 				break;

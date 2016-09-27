@@ -1,15 +1,22 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<link href="./bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet"/>
 <link href="css/icon_style0.css" rel="stylesheet"/>
-<link href="css/timline0.css" rel="stylesheet"/>
+<link href="/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
+<link href="./bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="/css/lightbox.css" rel="stylesheet">
 <script type="text/javascript" src="./jst/jquery-2.0.3UnCom.js"></script>
 <script type="text/javascript" src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./jst/base64.js" ></script>
 <script type="text/javascript" src="./jst/global_funcs.js" ></script>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <title>Sharings</title>
+<script src="http://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js" integrity="sha256-mFypf4R+nyQVTrc8dBd0DKddGB5AedThU73sLmLWdc0=" crossorigin="anonymous"></script>	
+<script src="/jst/plugins/canvas-to-blob.min.js" type="text/javascript"></script>
+<script src="/jst/plugins/sortable.min.js" type="text/javascript"></script>
+<script src="/jst/plugins/purify.min.js" type="text/javascript"></script>
+<script src="/jst/fileinput.min.js"></script>
+<script type="text/javascript" src="/jst/ajaxfileupload.js"></script>
+<script src="/jst/audioplayer.min.js" type="text/javascript"></script>
+
 
 <script type="text/javascript">
     var id;
@@ -17,23 +24,36 @@
     var desc;
     var token;
     var shrectime;
-	var not_count ;
-    var not_share ;
-	var not_chat ;	
-    var not_other ;
-    if (document.cookie.length > 0) {
-        if (document.cookie.indexOf("token=") != -1) {
-            token = document.cookie.slice(document.cookie.indexOf("token=") + 6);
-            //alert(token);
-        }
-        else {
-            	top.location="/";
-        }
-    } else {
-        top.location="/";
-    }
-
+	var not_count;
+    var not_share;
+	var not_chat;	
+    var not_other;
+	var enTarg;
+	var ldtime='0';
+	var lkey='0';
+	var Additions=new Array();
+	enTarg=0;
+	ldtime=getCookie("share_sltime");
+	if(ldtime!=""){
+		setCookie("share_sltime",'0');
+		ldtime='0';
+	}
+	lkey=getCookie("share_laskey");
+	if(lkey!=""){
+		setCookie("share_laskey","0");
+		lkey='0';
+	}
+	token=getCookie("token");
+	if(token=="")
+		top.location="/";
+    $( function()
+    {
+        $( 'audio' ).audioPlayer();
+    });  
+ 
 </script>
+
+
 <script class="eles2load" id="reqscpt" type="text/javascript">
 function req_info(){
 //req icon desc
@@ -41,7 +61,7 @@ function req_info(){
         //alert(json[0]);
         if (json.slice(0,8) == 'Negative') {
             document.cookie = null;
-            self.navigate("index.html");
+            top.location="/";
         } else {
             id = json.slice(json.indexOf('Id=')+3,json.indexOf('&Ico'));
             icon = json.slice(json.indexOf('Ico=') + 4, json.indexOf('&Des='));
@@ -57,7 +77,7 @@ function req_info(){
         //alert(json[0]);
         if (json.slice(0,8) == 'Negative') {
             document.cookie = null;
-            self.navigate("index.html");
+            top.location="/";
         } else {
             not_count = json.slice(json.indexOf('count=')+3,json.indexOf('&share'));
             not_share = json.slice(json.indexOf('share=') + 6, json.indexOf('&chat='));
@@ -84,7 +104,47 @@ setInterval(function() {
     req_info();
 }, 10000);
 </script>
-    <nav class=" navbar navbar-default navbar-fixed-top" role="navigation">
+<script type="text/javascript">
+function EntsaveClicked(){ 
+	
+	//$("#mdia0").animate({ height:"0px" }, 1000);
+	Additions.push(new Array(2,$('#tades0').val()));
+    $.post("php/submit.php", { 
+		"token": token, 
+		"sub-type": "entry",
+		"showto": enTarg,
+		"content":Additions },
+		function (json) {
+        //alert(json[0]);
+        if (json[0] == 'N') {
+            document.cookie = null;
+            	top.location="/";
+        } else {
+          
+        }
+		
+    });
+	Additions=new Array();
+	EntcleanClicked();
+}
+function EntcleanClicked(){
+	$('#tades0').text(labTar[w]);
+}
+function tarchange(w){
+	enTarg=w;
+	var labTar=new Array("To Me","To Friends","To Everyone");
+	$("#wTarb0").text(labTar[w]);
+	
+}
+function EntAddition(){
+}
+ 
+</script>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Home</title>
+<nav id="napatop0" class=" navbar navbar-default navbar-fixed-top" role="navigation">
    <div class="container">
     <div class="navbar-header">
       <a class="navbar-brand" href=".">Blind Talk</a>
@@ -93,8 +153,8 @@ setInterval(function() {
        <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
           <li ><a href="home.html">Home</a></li>
-          <li class="active"><a href="share.html">Sharings</a></li>
-          <li ><a href="chat.html">Chat Room</a></li>
+          <li class="active" ><a href="share.html">Sharings <span style="visibility: hidden" id="shabadg0"class='badge'>@nc</span></a></li>
+          <li ><a href="chat.html">Chat Room <span style="visibility: hidden" id="chabadg0"class='badge'>@nc</span></a></li>
       </ul>
            <ul class="nav navbar-nav navbar-right "> 
                <li>
@@ -112,9 +172,9 @@ setInterval(function() {
                         <b class="caret"></b>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Home</a></li>
-                        <li><a href="#">Friends</a></li>
-                        <li><a href="#">Settings</a></li>
+                        <li><a href="home.html">Home</a></li>
+                        <li><a href="friends.html">Friends</a></li>
+                        <li><a href="settings.html">Settings</a></li>
                         <li class="divider"></li>
                         <li><a onclick="global_logoff()" href="#">Logoff</a></li>
                     </ul>
@@ -126,31 +186,63 @@ setInterval(function() {
 </nav>
 </head>
 <body>
-    <div class="container">
+    <div style="margin-top:5%" class="container">
         <div class="bs-docs-section">
             <div class="row">
-            <div id="contal0" class="col-lg-offset-3 col-lg-7">
-        
-                 <div class=" modal-dialog" style="margin-top:64px;width:100%">
-                  <div class="modal-content">
-                    <div class="modal-header">      
-                        <button type="button" style="margin-left:10px" class="close" data-dismiss="modal" aria-hidden="true">!</button>
-                        <button type="button" class="close " data-dismiss="modal" aria-hidden="true">+</button>
-                      <h4 class="modal-title">Share Your Life!<span></span></h4>
-                    </div>
-                    <div class="modal-body">
-                        <textarea  style="width:100%;height:110px;font-size:23px;"   id="des0"></textarea>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-default" data-dismiss="modal">Clean</button>
-                      <button type="button" class="btn btn-primary">Share</button>
-                    </div>
-                  </div>
-                </div>
+            <div id="contal0"  class="col-lg-offset-3 col-lg-7">
+                
+			
+				
+                 
+				<div id="entries_box" ></div>
+				
+				<div class="panel panel-default" onclick="moreentryClicked()">
+				    <div class="panel-heading" style="text-align:center">
+						<h3 class="panel-title">
+							more entries
+						</h3>
+					</div> 
+					
+				</div>
+				<script type="text/javascript">
+					$.ajax({url:"php/recv_share_entry.php",
+						type:"post",
+						data:{
+							"token":token,
+							"towho":1,
+							"count":5,
+							"ldtime":ldtime,
+							"lkey":lkey
+						},
+						success:function(data){
+								 
+								$("#entries_box").append(data);
+						}});
+					function moreentryClicked(){
+						ldtime=getCookie('share_sltime');
+						lkey=getCookie('share_laskey');
+						//alert(ldtime,lkey);
+						//alert(getCookie("share_sltime"),getCookie("share_laskey"));
+								$.ajax({url:"php/recv_share_entry.php",
+										type:"post",
+										data:{
+											"token":token,
+											"towho":1,
+											"count":2,
+											"ldtime":getCookie("share_sltime"),
+											"lkey":getCookie("share_laskey")
+										},
+										success:function(data){
+												 
+												$("#entries_box").append(data);
+										}});
+					}
 
+				</script>
               </div>
             </div>
         </div>
     </div>
+<script type="text/javascript" src="/jst/lightbox.js"></script>
 </body>
 </html>

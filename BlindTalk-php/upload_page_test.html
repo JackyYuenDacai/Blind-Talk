@@ -1,0 +1,95 @@
+<script type="text/javascript" src="./jst/jquery-2.0.3UnCom.js"></script>
+<script type="text/javascript" src="./bootstrap-3.3.6-dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./jst/base64.js" ></script>
+<script type="text/javascript" src="./jst/global_funcs.js" ></script>
+<link href="./bootstrap-3.3.6-dist/css/bootstrap.min.css" rel="stylesheet"/>
+<script src="http://code.jquery.com/ui/1.12.0-rc.1/jquery-ui.min.js" integrity="sha256-mFypf4R+nyQVTrc8dBd0DKddGB5AedThU73sLmLWdc0=" crossorigin="anonymous"></script>	
+<link href="css/icon_style0.css" rel="stylesheet"/>
+<link href="/css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
+<script src="/jst/plugins/canvas-to-blob.min.js" type="text/javascript"></script>
+<script src="/jst/plugins/sortable.min.js" type="text/javascript"></script>
+<script src="/jst/plugins/purify.min.js" type="text/javascript"></script>
+<script src="/jst/fileinput.min.js"></script>
+
+<div>
+
+<input type="file" name="file" id="FEele" multiple class="file-loading" />
+
+</div>
+
+
+ 
+
+<script type="text/javascript">
+
+$("#FEele").fileinput({
+                
+                uploadUrl: "/php/upload.php",  
+                
+                uploadAsync: true,  
+                showUpload: true,  
+                showRemove : true, // 
+                showPreview : true, // 
+                showCaption: false,//title
+                browseClass: "btn btn-primary", //buton style   
+                dropZoneEnabled:false,
+                maxFileCount: 10 ,
+                validateInitialCount:true,
+                previewFileIcon: "<i class='glyphicon glyphicon-king'></i>",
+                msgFilesTooMany: "Too many addition files",
+            });
+ 
+$('#FEele').on('fileerror', function(event, data, msg) {
+            console.log(data.id);
+            console.log(data.index);
+            console.log(data.file);
+            console.log(data.reader);
+            console.log(data.files);
+            // get message
+          //  alert(msg);
+
+});
+//异步上传返回结果处理
+
+$("#FEele").on("fileuploaded", function (event, data, previewId, index) {
+               console.log(data.id);
+               console.log(data.index);
+               console.log(data.file);
+               console.log(data.reader);
+               console.log(data.files);
+
+                var obj = data.response;
+            //    alert(JSON.stringify(data.success));
+           //    
+            });
+
+//同步上传错误处理
+       $('#FEele').on('filebatchuploaderror', function(event, data, msg) {
+            console.log(data.id);
+            console.log(data.index);
+            console.log(data.file);
+            console.log(data.reader);
+            console.log(data.files);
+            // get message
+           // alert(msg);
+         });
+   //同步上传返回结果处理
+   $("#FEele").on("filebatchuploadsuccess", function (event, data, previewId, index) {
+           console.log(data.id);
+               console.log(data.index);
+               console.log(data.file);
+               console.log(data.reader);
+               console.log(data.files);
+                var obj = data.response;
+               // alert(JSON.stringify(data.success));
+      });
+
+//上传前
+
+$('#FEele').on('filepreupload', function(event, data, previewId, index) {
+        var form = data.form, files = data.files, extra = data.extra,
+            response = data.response, reader = data.reader;
+        console.log('File pre upload triggered');
+    });
+
+</script>

@@ -57,6 +57,9 @@ create table visit_log
 
 create table user_icon
 (id varchar(64) primary key,icpath varchar(1024) default 'defser.png');
+
+create table file_record
+(id varchar(128) primary key,belongs varchar(64),ftype int default 2,fpath varchar(512) not null);
 /*
 !!idpw.type
 --0:user
@@ -102,14 +105,16 @@ insert into  user_last_log values('Dacai',now(),default);
 insert into  user_icon values('Dacai',default);
 
 
-insert into  share_recs values('Admin',2,0,'Welcome To The Matrix',now(),0,md5 (TO_BASE64(now() + rand())));
+select md5 (TO_BASE64(now() + rand())) into @kkk;
+insert into  share_recs values('Admin',2,0,'Welcome To The Matrix',now(),0,@kkk);
+insert into  share_recs values('Admin',2,0,'Matrix',now(),0,@kkk);
+
 insert into  user_flist values('Admin',now(),now(),'JackyYuen');
 insert into  user_flist values('JackyYuen',now(),now(),'Admin');
 insert into  user_flist values('Admin',now(),now(),'Dacai');
 insert into  user_flist values('JackyYuen',now(),now(),'Dacai');
 insert into  user_flist values('Dacai',now(),now(),'JackyYuen');
 insert into  user_flist values('Dacai',now(),now(),'Admin');
-
 
 source sql_funcs-mysql.sql
 

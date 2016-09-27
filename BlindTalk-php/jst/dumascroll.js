@@ -62,7 +62,7 @@ duma.BeautifyScrollBar = function(obj,arrowUpCss,arrowUpActiveCss,handleCss,hand
 }
 duma.BeautifyScrollBar.prototype = {
     setObjCss:function() {
-        duma.getStyle(this.obj).position == "static" ? this.obj.style.position = "relative" : duma.getStyle(this.obj).backgroundColor == "transparent" ? this.obj.style.backgroundColor = "#fff" : null;        //若容器本来就没有设position，则初始化为relative；若容器原来未设置背景色，则初始化为白色；
+        duma.getStyle(this.obj).position == "static" ? this.obj.style.position = "relative" : duma.getStyle(this.obj).backgroundColor == "transparent" ? null:null;//this.obj.style.backgroundColor = "#000" : null;        //若容器本来就没有设position，则初始化为relative；若容器原来未设置背景色，则初始化为白色；
     },
     sethandle:function() {                //当内容超多时设置拖拽条子的最小高度
         this.handle.style.top = this.arrowUpHeight + "px";
