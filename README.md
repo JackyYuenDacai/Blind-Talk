@@ -11,13 +11,13 @@
  I would say its hoping people can communicate </br>
  with nothing except moral binding us.
 
-###Aimed Function:
+### Aimed Function:
 1. Basic Message Communication
 2. Multimedia Message
 3. Game With Friends
 4. Sharing
 
-###Language or Techniques
+### Language or Techniques
  * SQL 
  * HTML 
  * CSS¡¡
@@ -25,7 +25,7 @@
  * PHP
  ...
  
-###Requirements
+### Requirements
  * mysql >=5.6 
  * apache >=2.4.10
  * php >=5
